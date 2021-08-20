@@ -29,6 +29,7 @@ def get_user_photo(access_token=vk_token2):
     global type
     type = res.json()['response']['items'][-1]['sizes'][-1]['type']
 
+
 def post_photo(token=yandex_token):
     global photo_name
     photo_name = f'{likes}.jpg'
@@ -42,20 +43,31 @@ def post_photo(token=yandex_token):
     }
     res = requests.post('https://cloud-api.yandex.net/v1/disk/resources/upload', headers=headers, params=params)
 
+
 def save_json_file():
     with io.open('new_file.json', 'a', encoding='UTF-8') as file:
-        data = dict({"file_name": f'{likes}.jpg', 'size' : type})
+        data = dict({"file_name": f'{likes}.jpg', 'size': type})
         file.write(json.dumps(data, ensure_ascii=False))
     with open('new_file.json', 'r', encoding='UTF-8') as file:
         print(file.read())
+
 
 def show_yandex_disk():
     headers = {
         'accept': 'application/json',
         'authorization': f'OAuth {yandex_token}'
     }
-    res = requests.get('https://cloud-api.yandex.net/v1/disk/resources/files', headers = headers)
+    res = requests.get('https://cloud-api.yandex.net/v1/disk/resources/files', headers=headers)
     pprint(res.json())
+
+
+commands = {
+    'User photo': get_user_photo(),
+    'Post photo': post_photo(),
+    'Show file': save_json_file(),
+    'Show yandex disk': show_yandex_disk()
+}
+
 
 def main():
     while True:
@@ -68,11 +80,5 @@ def main():
         else:
             break
 
-commands = {
-    'User photo': get_user_photo(),
-    'Post photo': post_photo(),
-    'Show file': save_json_file(),
-    'Show yandex disk': show_yandex_disk()
-}
 
 main()
