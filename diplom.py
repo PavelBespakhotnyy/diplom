@@ -72,7 +72,7 @@ commands = {
     'User photo': get_user_photo(),
     'Post photo': post_photo(),
     'Show file': save_json_file(),
-    'Show yandex disk': show_yandex_disk
+    'Show yandex disk': show_yandex_disk()
 }
 
 main()
