@@ -4,12 +4,12 @@ import requests
 with open('token.txt', 'r', encoding='UTF-8') as file:
     vk_token = file.read()
 
-with open('polygon_token.txt', 'r', encoding='UTF-8') as file:
-    yandex_token = file.read()
+
+yandex_token = str(input('Введите токен яндекс диска: '))
 
 url = 'https://api.vk.com/method/'
 vk_id = 'begemot_korovin'
-vk_token2 = ''
+vk_token2 = str(input('Введите VK токен: '))
 
 
 def get_user_photo(access_token=vk_token2):
