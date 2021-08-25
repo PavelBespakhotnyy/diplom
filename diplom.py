@@ -1,56 +1,19 @@
-import io, json
-import requests
-
-with open('token.txt', 'r', encoding='UTF-8') as file:
-    vk_token = file.read()
-
-
-yandex_token = str(input('Введите токен яндекс диска: '))
+import io, json, requests
+from pprint import pprint
 
 url = 'https://api.vk.com/method/'
-vk_id = 'begemot_korovin'
-vk_token2 = str(input('Введите VK токен: '))
 
+vk_token = str(input('Введите Ваш VK token: '))
+vk_id = str(input('Введите VK id человека, фото которого хотите сохранить: '))
+vk_token2 = str(input('Введите VK token человека, фото которого хотите сохранить: '))
+yandex_token = str(input('Введите яндекс token: '))
 
-def get_user_photo(access_token=vk_token2):
-    method = 'photos.get'
-    params = {
-        'album_id': 'profile',
-        'photo_sizes': 1,
-        'access_token': access_token,
-        'v': '5.131',
-        'extended': '1'
-    }
-    res = requests.get(url + method, params=params)
-    global likes
-    likes = res.json()['response']['items'][-1]['likes']['count']
-    global user_photo
-    user_photo = res.json()['response']['items'][-1]['sizes'][-1]['url']
-    global type
-    type = res.json()['response']['items'][-1]['sizes'][-1]['type']
-
-
-def post_photo(token=yandex_token):
-    global photo_name
-    photo_name = f'{likes}.jpg'
-    headers = {
-        'accept': 'application/json',
-        'authorization': f'OAuth {yandex_token}'
-    }
-    params = {
-        'path': f'{likes}.jpg',
-        'url': user_photo
-    }
-    res = requests.post('https://cloud-api.yandex.net/v1/disk/resources/upload', headers=headers, params=params)
-
-
-def save_json_file():
-    with io.open('new_file.json', 'a', encoding='UTF-8') as file:
-        data = dict({"file_name": f'{likes}.jpg', 'size': type})
-        file.write(json.dumps(data, ensure_ascii=False))
-    with open('new_file.json', 'r', encoding='UTF-8') as file:
-        print(file.read())
-
+def enter_values():
+    vk_token = str(input('Введите Ваш VK token: '))
+    vk_id = str(input('Введите VK id человека, фото которого хотите сохранить: '))
+    vk_token2 = str(input('Введите VK token человека, фото которого хотите сохранить: '))
+    yandex_token = str(input('Введите яндекс token: '))
+    return vk_token, vk_id, vk_token2, yandex_token
 
 def show_yandex_disk():
     headers = {
@@ -60,25 +23,94 @@ def show_yandex_disk():
     res = requests.get('https://cloud-api.yandex.net/v1/disk/resources/files', headers=headers)
     pprint(res.json())
 
+def show_file():
+    with open('new_file1.json', 'r', encoding='UTF-8') as file:
+        pprint(file.read())
 
-commands = {
-    'User photo': get_user_photo(),
-    'Post photo': post_photo(),
-    'Show file': save_json_file(),
-    'Show yandex disk': show_yandex_disk()
+def upload_photo():
+    method = 'photos.get'
+    params = {
+        'album_id': 'profile',
+        'photo_sizes': 1,
+        'access_token': vk_token2,
+        'v': '5.131',
+        'extended': '1'
+    }
+    res = requests.get(url + method, params=params)
+    list = res.json()['response']['items']
+    for i in list:
+        user_photo = i['sizes'][-1]['url']
+        likes = i['likes']['count']
+        photo_name = f'{likes}.jpg'
+        type = i['sizes'][-1]['type']
+        headers = {
+            'accept': 'application/json',
+            'authorization': f'OAuth {yandex_token}'
+        }
+
+        params = {
+            'path': f'Фото/{likes}.jpg',
+            'url': user_photo
+        }
+
+        requests.post('https://cloud-api.yandex.net/v1/disk/resources/upload', headers=headers, params=params)
+
+        with io.open('new_file1.json', 'a', encoding='UTF-8') as file:
+            data = dict({"file_name": f'{likes}.jpg', 'size': type})
+            file.write(json.dumps(data, ensure_ascii=False))
+
+    return user_photo, likes, photo_name, type
+
+method = 'photos.get'
+params = {
+    'album_id': 'profile',
+    'photo_sizes': 1,
+    'access_token': vk_token2,
+    'v': '5.131',
+    'extended': '1'
 }
 
+res = requests.get(url + method, params=params)
+list = res.json()['response']['items']
+
+for i in list:
+    user_photo = i['sizes'][-1]['url']
+    likes = i['likes']['count']
+    photo_name = f'{likes}.jpg'
+    type = i['sizes'][-1]['type']
+    headers = {
+        'accept': 'application/json',
+        'authorization': f'OAuth {yandex_token}'
+    }
+
+    params = {
+        'path': f'Фото/{likes}.jpg',
+        'url': user_photo
+    }
+
+    requests.post('https://cloud-api.yandex.net/v1/disk/resources/upload', headers=headers, params=params)
+
+    with io.open('new_file1.json', 'a', encoding='UTF-8') as file:
+        data = dict({"file_name": f'{likes}.jpg', 'size': type})
+        file.write(json.dumps(data, ensure_ascii=False))
+
+commands = {
+    'Show disk': show_yandex_disk,
+    'Show file': show_file,
+    'Enter values': enter_values,
+    'Upload photo': upload_photo
+}
 
 def main():
-    while True:
-        command = str(input('Введите команду (Help - список команд, Break - для выхода): '))
-        if command != 'Break':
-            if command == 'Help':
-                print(commands.keys())
+    command = str(input('Введите команду (Break - выход, Help - список команд): '))
+    while command != 'Break':
+        if command != 'Help':
+            if command in commands.keys():
+                commands[command]()
             else:
-                commands[command]
+                print('Что-то пошло не так...')
         else:
-            break
-
+            print(commands.keys())
+        command = str(input('Введите команду(Break - выход): '))
 
 main()
